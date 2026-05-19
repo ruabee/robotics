@@ -5,6 +5,8 @@ from smart_factory_mrs.models import Robot, TaskStatus
 from smart_factory_mrs.scheduler import Scheduler
 from smart_factory_mrs.tasks import create_initial_tasks, create_production_batch, create_urgent_task
 
+ROBOT_SPEED = 2.0
+
 
 class FactorySimulation:
     def __init__(self):
@@ -21,7 +23,7 @@ class FactorySimulation:
                 logs.append(f"{robot.robot_id}: idle at {robot.location}")
                 continue
 
-            robot.remaining_travel = max(0.0, robot.remaining_travel - 1.0)
+            robot.remaining_travel = max(0.0, robot.remaining_travel - ROBOT_SPEED)
             task = robot.current_task
             logs.append(
                 f"{robot.robot_id}: moving {task.pickup}->{task.dropoff} for "

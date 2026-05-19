@@ -55,6 +55,7 @@ class GazeboFactorySimNode(Node):
             )
         for line in self.simulation.scheduler.reschedule(self.simulation.time):
             self.get_logger().info(line)
+        self.publish_obstacle_state()
         self.publish_robot_states()
         self.get_logger().info(
             "Gazebo factory simulation started. Publish events with: "
@@ -102,6 +103,7 @@ class GazeboFactorySimNode(Node):
             self.publish_lidar_scan(robot_id, x, y, yaw)
             self.publish_goal_pose(robot_id, robot)
             self.set_entity_pose(robot_id, x, y, yaw)
+            self.publish_cargo_state(robot_id, robot, x, y, yaw)
 
     def set_entity_pose(self, entity_name: str, x: float, y: float, yaw: float, z: float = 0.0) -> None:
         state = EntityState()
@@ -205,6 +207,13 @@ class GazeboFactorySimNode(Node):
         goal.pose.position.y = target.y
         goal.pose.orientation.w = 1.0
         self.goal_publishers[robot_id].publish(goal)
+
+    def publish_cargo_state(self, robot_id: str, robot, x: float, y: float, yaw: float) -> None:
+        cargo_name = f"{robot_id}_cargo"
+        if robot.current_task is None:
+            self.set_entity_pose(cargo_name, -20.0, -22.0, 0.0, z=0.3)
+            return
+        self.set_entity_pose(cargo_name, x, y, yaw, z=0.42)
 
     def _normalize_angle(self, angle: float) -> float:
         while angle > pi:

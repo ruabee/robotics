@@ -16,6 +16,21 @@
     <model name="ground">
       <static>true</static>
       <link name="link">
+        <visual name="warehouse_zone">
+          <geometry><box><size>3.0 7.4 0.012</size></box></geometry>
+          <pose>1.3 3 0.01 0 0 0</pose>
+          <material><ambient>0.16 0.28 0.42 1</ambient><diffuse>0.16 0.28 0.42 1</diffuse></material>
+        </visual>
+        <visual name="assembly_zone">
+          <geometry><box><size>2.5 7.4 0.012</size></box></geometry>
+          <pose>8.1 3 0.012 0 0 0</pose>
+          <material><ambient>0.14 0.34 0.20 1</ambient><diffuse>0.14 0.34 0.20 1</diffuse></material>
+        </visual>
+        <visual name="navigation_zone">
+          <geometry><box><size>3.2 7.4 0.012</size></box></geometry>
+          <pose>4.7 3 0.014 0 0 0</pose>
+          <material><ambient>0.38 0.39 0.38 1</ambient><diffuse>0.38 0.39 0.38 1</diffuse></material>
+        </visual>
         <visual name="floor">
           <geometry><box><size>11 9 0.05</size></box></geometry>
           <pose>4 3 -0.03 0 0 0</pose>
@@ -33,11 +48,11 @@
       <pose>4 3 0.01 0 0 0</pose>
       <link name="link">
         <visual name="yellow_lane_x">
-          <geometry><box><size>8.4 0.08 0.02</size></box></geometry>
+          <geometry><box><size>8.4 0.14 0.025</size></box></geometry>
           <material><ambient>1.0 0.78 0.05 1</ambient><diffuse>1.0 0.78 0.05 1</diffuse></material>
         </visual>
         <visual name="yellow_lane_y">
-          <geometry><box><size>0.08 6.4 0.02</size></box></geometry>
+          <geometry><box><size>0.14 6.4 0.025</size></box></geometry>
           <material><ambient>1.0 0.78 0.05 1</ambient><diffuse>1.0 0.78 0.05 1</diffuse></material>
         </visual>
       </link>
@@ -117,7 +132,7 @@
     </model>
 
     <model name="dynamic_obstacle">
-      <static>true</static>
+      <static>false</static>
       <pose>-20 -20 0.45 0 0 0</pose>
       <link name="link">
         <visual name="body">
@@ -127,6 +142,22 @@
         <collision name="collision">
           <geometry><box><size>1.0 1.0 0.9</size></box></geometry>
         </collision>
+      </link>
+    </model>
+
+    <model name="R1_cargo">
+      <static>false</static>
+      <pose>-20 -22 0.3 0 0 0</pose>
+      <link name="link">
+        <visual name="body"><geometry><box><size>0.28 0.24 0.18</size></box></geometry><material><ambient>0.05 0.35 1.0 1</ambient><diffuse>0.05 0.35 1.0 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <model name="R2_cargo">
+      <static>false</static>
+      <pose>-20 -22 0.3 0 0 0</pose>
+      <link name="link">
+        <visual name="body"><geometry><box><size>0.28 0.24 0.18</size></box></geometry><material><ambient>0.05 0.35 1.0 1</ambient><diffuse>0.05 0.35 1.0 1</diffuse></material></visual>
       </link>
     </model>
 
