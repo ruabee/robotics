@@ -35,8 +35,8 @@
 
 ### ROS_04_Sensors
 
-- 각 로봇에 LiDAR 또는 카메라 센서를 붙인다.
-- `/scan` 같은 센서 토픽을 확인하고, 장애물 감지나 상태 출력에 연결한다.
+- 각 로봇에 LiDAR 개념을 반영하여 `/R1/scan`, `/R2/scan` 토픽을 발행한다.
+- 장애물 이벤트가 켜지면 LaserScan ranges에 가까운 장애물 거리가 반영된다.
 
 ### ROS_05_SLAM
 
@@ -48,6 +48,7 @@
 - 최종 확장 방향은 스케줄러가 작업을 정하면 각 로봇에게 Nav2 goal을 보내는 구조다.
 - 예: `R1`이 `T1`을 받으면 `W1`으로 이동한 뒤 `S1`로 이동한다.
 - Nav2를 쓰려면 로봇별 namespace, map, localization, planner/controller 설정이 필요하다.
+- 중간 단계에서는 `/R1/goal_pose`, `/R2/goal_pose`로 Nav2 goal과 같은 PoseStamped 형식을 발행한다.
 
 ## 발표에서 설명할 구조
 

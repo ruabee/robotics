@@ -1,17 +1,23 @@
 from collections import deque
-from math import atan2, cos, sin
+from math import atan2, cos, hypot, pi, sin
 
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import PoseStamped, Twist
 import rclpy
 from gazebo_msgs.msg import EntityState
 from gazebo_msgs.srv import SetEntityState
 from rclpy.node import Node
+from sensor_msgs.msg import LaserScan
 from std_msgs.msg import String
 
+from smart_factory_mrs.factory_map import FACTORY_MAP
 from smart_factory_mrs.simulation import FactorySimulation
 
 TIMER_PERIOD = 0.1
 SIMULATION_STEP_INTERVAL = 1.0
+LASER_RANGE_MAX = 10.0
+LASER_SAMPLES = 181
+OBSTACLE_X = 4.0
+OBSTACLE_Y = 3.0
 
 
 class GazeboFactorySimNode(Node):
@@ -28,6 +34,14 @@ class GazeboFactorySimNode(Node):
         self.cmd_vel_publishers = {
             "R1": self.create_publisher(Twist, "R1/cmd_vel", 10),
             "R2": self.create_publisher(Twist, "R2/cmd_vel", 10),
+        }
+        self.scan_publishers = {
+            "R1": self.create_publisher(LaserScan, "R1/scan", 10),
+            "R2": self.create_publisher(LaserScan, "R2/scan", 10),
+        }
+        self.goal_publishers = {
+            "R1": self.create_publisher(PoseStamped, "R1/goal_pose", 10),
+            "R2": self.create_publisher(PoseStamped, "R2/goal_pose", 10),
         }
         self.event_sub = self.create_subscription(String, "factory_sim/event", self.on_event, 10)
         self.set_state_client = self.create_client(SetEntityState, "/set_entity_state")
@@ -85,6 +99,8 @@ class GazeboFactorySimNode(Node):
             if robot.current_task is None:
                 yaw = 0.0
             self.publish_cmd_vel(robot_id)
+            self.publish_lidar_scan(robot_id, x, y, yaw)
+            self.publish_goal_pose(robot_id, robot)
             self.set_entity_pose(robot_id, x, y, yaw)
 
     def set_entity_pose(self, entity_name: str, x: float, y: float, yaw: float, z: float = 0.0) -> None:
@@ -147,6 +163,55 @@ class GazeboFactorySimNode(Node):
         msg.linear.x = (target[0] - start[0]) / SIMULATION_STEP_INTERVAL
         msg.linear.y = (target[1] - start[1]) / SIMULATION_STEP_INTERVAL
         self.cmd_vel_publishers[robot_id].publish(msg)
+
+    def publish_lidar_scan(self, robot_id: str, x: float, y: float, yaw: float) -> None:
+        scan = LaserScan()
+        scan.header.stamp = self.get_clock().now().to_msg()
+        scan.header.frame_id = f"{robot_id}/laser_frame"
+        scan.angle_min = -pi / 2.0
+        scan.angle_max = pi / 2.0
+        scan.angle_increment = (scan.angle_max - scan.angle_min) / (LASER_SAMPLES - 1)
+        scan.time_increment = 0.0
+        scan.scan_time = TIMER_PERIOD
+        scan.range_min = 0.1
+        scan.range_max = LASER_RANGE_MAX
+        scan.ranges = [LASER_RANGE_MAX for _ in range(LASER_SAMPLES)]
+
+        if self.simulation.scheduler.obstacle_active:
+            dx = OBSTACLE_X - x
+            dy = OBSTACLE_Y - y
+            distance = hypot(dx, dy)
+            relative_angle = self._normalize_angle(atan2(dy, dx) - yaw)
+            if scan.angle_min <= relative_angle <= scan.angle_max and scan.range_min <= distance <= scan.range_max:
+                center_index = round((relative_angle - scan.angle_min) / scan.angle_increment)
+                measured_distance = max(scan.range_min, distance - 0.7)
+                for offset in range(-3, 4):
+                    index = center_index + offset
+                    if 0 <= index < LASER_SAMPLES:
+                        scan.ranges[index] = measured_distance
+                if abs(relative_angle) < 0.35:
+                    self.get_logger().info(f"{robot_id} LiDAR obstacle ahead: {measured_distance:.2f} m")
+
+        self.scan_publishers[robot_id].publish(scan)
+
+    def publish_goal_pose(self, robot_id: str, robot) -> None:
+        if robot.current_task is None:
+            return
+        target = FACTORY_MAP[robot.current_task.dropoff]
+        goal = PoseStamped()
+        goal.header.stamp = self.get_clock().now().to_msg()
+        goal.header.frame_id = "map"
+        goal.pose.position.x = target.x
+        goal.pose.position.y = target.y
+        goal.pose.orientation.w = 1.0
+        self.goal_publishers[robot_id].publish(goal)
+
+    def _normalize_angle(self, angle: float) -> float:
+        while angle > pi:
+            angle -= 2.0 * pi
+        while angle < -pi:
+            angle += 2.0 * pi
+        return angle
 
 
 def main(args=None):
