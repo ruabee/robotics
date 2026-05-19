@@ -1,3 +1,1 @@
-# shopping
-# robotics
 # robotics
