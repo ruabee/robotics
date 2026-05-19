@@ -25,6 +25,7 @@ setup(
         "console_scripts": [
             "factory_sim = smart_factory_mrs.factory_sim_node:main",
             "gazebo_factory_sim = smart_factory_mrs.gazebo_factory_sim_node:main",
+            "event_sender = smart_factory_mrs.event_sender_node:main",
         ],
     },
 )

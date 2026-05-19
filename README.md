@@ -68,10 +68,10 @@ sudo apt update
 sudo apt install ros-humble-gazebo-ros-pkgs
 ```
 
-빌드 후 Gazebo 시뮬레이션을 실행합니다.
+빌드 후 Gazebo 시뮬레이션을 실행합니다. 현재 저장소가 `/home/ruabee/Desktop/robotics`에 있다면 아래처럼 실행합니다.
 
 ```bash
-cd ~/robot_ws
+cd /home/ruabee/Desktop/robotics
 source /opt/ros/humble/setup.bash
 colcon build --packages-select smart_factory_mrs
 source install/setup.bash
@@ -85,11 +85,29 @@ Gazebo 화면에서는 다음처럼 보면 됩니다.
 - 빨간 원통: 로봇 `R1`
 - 노란 원통: 로봇 `R2`
 
-이벤트는 다른 터미널에서 토픽으로 넣습니다.
+로봇이 멈추는 것은 배정된 작업을 끝냈거나, 새 이벤트를 기다리는 상태입니다. 이벤트는 Gazebo를 켜둔 터미널이 아니라 새 터미널을 하나 더 열어서 넣습니다.
+
+추천 방식:
 
 ```bash
 source /opt/ros/humble/setup.bash
-source ~/robot_ws/install/setup.bash
+source /home/ruabee/Desktop/robotics/install/setup.bash
+ros2 run smart_factory_mrs event_sender
+```
+
+그러면 아래처럼 입력창이 뜹니다.
+
+```text
+event>
+```
+
+여기에 `1`, `2`, `3`, `4` 중 하나를 입력하고 Enter를 누르면 Gazebo 시뮬레이션으로 이벤트가 전달됩니다.
+
+직접 토픽으로 보낼 수도 있습니다.
+
+```bash
+source /opt/ros/humble/setup.bash
+source /home/ruabee/Desktop/robotics/install/setup.bash
 ros2 topic pub --once /factory_sim/event std_msgs/msg/String "{data: '1'}"
 ```
 
