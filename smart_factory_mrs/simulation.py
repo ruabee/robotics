@@ -48,7 +48,7 @@ class FactorySimulation:
             self.scheduler.delay_v2_part(self.time)
         elif event_key == "3":
             self.scheduler.insert_urgent_task(create_urgent_task(self.time))
-        elif event_key == "4":
+        elif event_key in {"4", "r", "R"}:
             self.scheduler.last_reason = "manual reschedule"
         else:
             return [f"Unknown event: {event_key}"]

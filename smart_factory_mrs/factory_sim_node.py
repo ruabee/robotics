@@ -13,7 +13,7 @@ Controls:
   1 = change sequence V1 -> V3 -> V2
   2 = delay V2 part
   3 = insert urgent task X
-  4 = reschedule now
+  r = reschedule now
   q = quit
 """
 
