@@ -85,7 +85,7 @@ class GazeboFactorySimNode(Node):
         state.name = entity_name
         state.pose.position.x = x
         state.pose.position.y = y
-        state.pose.position.z = 0.18
+        state.pose.position.z = 0.0
         state.pose.orientation.z = sin(yaw / 2.0)
         state.pose.orientation.w = cos(yaw / 2.0)
         state.reference_frame = "world"

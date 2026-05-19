@@ -117,7 +117,7 @@
     </model>
 
     <model name="R1">
-      <pose>0 0 0.18 0 0 0</pose>
+      <pose>0 0 0.0 0 0 0</pose>
       <static>false</static>
       <link name="base_link">
         <inertial><mass>5.0</mass><inertia><ixx>0.15</ixx><iyy>0.18</iyy><izz>0.20</izz></inertia></inertial>
@@ -133,7 +133,7 @@
     </model>
 
     <model name="R2">
-      <pose>0 6 0.18 0 0 0</pose>
+      <pose>0 6 0.0 0 0 0</pose>
       <static>false</static>
       <link name="base_link">
         <inertial><mass>5.0</mass><inertia><ixx>0.15</ixx><iyy>0.18</iyy><izz>0.20</izz></inertia></inertial>

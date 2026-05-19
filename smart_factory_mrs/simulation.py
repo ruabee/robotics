@@ -3,12 +3,13 @@ from math import ceil
 from smart_factory_mrs.factory_map import FACTORY_MAP
 from smart_factory_mrs.models import Robot, TaskStatus
 from smart_factory_mrs.scheduler import Scheduler
-from smart_factory_mrs.tasks import create_initial_tasks, create_urgent_task
+from smart_factory_mrs.tasks import create_initial_tasks, create_production_batch, create_urgent_task
 
 
 class FactorySimulation:
     def __init__(self):
         self.time = 0
+        self.batch_number = 1
         self.robots = [Robot("R1", "W1"), Robot("R2", "W2")]
         self.scheduler = Scheduler(self.robots, create_initial_tasks())
 
@@ -34,6 +35,7 @@ class FactorySimulation:
                 robot.current_task = None
                 robot.total_travel = 0.0
 
+        logs.extend(self._ensure_continuous_production())
         logs.extend(self.scheduler.reschedule(self.time))
         logs.extend(self.map_lines())
         logs.extend(self.status_lines())
@@ -70,6 +72,24 @@ class FactorySimulation:
                 f"ready={task.ready_time}, due={task.due_time}, robot={task.assigned_robot}"
             )
         return lines
+
+    def _ensure_continuous_production(self) -> list[str]:
+        active_tasks = [
+            task
+            for task in self.scheduler.tasks
+            if not task.urgent and task.status != TaskStatus.DONE
+        ]
+        if active_tasks:
+            return []
+
+        self.batch_number += 1
+        new_tasks = create_production_batch(self.batch_number, self.time)
+        self.scheduler.tasks.extend(new_tasks)
+        self.scheduler.last_reason = f"new production batch B{self.batch_number} released"
+        return [
+            f"[Production] Batch B{self.batch_number} released: "
+            + ", ".join(task.task_id for task in new_tasks)
+        ]
 
     def map_lines(self) -> list[str]:
         grid = [["." for _ in range(9)] for _ in range(7)]
