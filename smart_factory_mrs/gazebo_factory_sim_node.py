@@ -15,7 +15,7 @@ class GazeboFactorySimNode(Node):
         self.simulation = FactorySimulation()
         self.events: deque[str] = deque()
         self.status_pub = self.create_publisher(String, "factory_sim/status", 10)
-        self.create_subscription(String, "factory_sim/event", self.on_event, 10)
+        self.event_sub = self.create_subscription(String, "factory_sim/event", self.on_event, 10)
         self.set_state_client = self.create_client(SetEntityState, "/set_entity_state")
         self.timer = self.create_timer(1.0, self.on_timer)
 

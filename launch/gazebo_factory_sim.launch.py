@@ -20,7 +20,11 @@ def generate_launch_description():
         [
             IncludeLaunchDescription(
                 PythonLaunchDescriptionSource(gazebo_launch),
-                launch_arguments={"world": world_path}.items(),
+                launch_arguments={
+                    "world": world_path,
+                    "gui": "true",
+                    "verbose": "true",
+                }.items(),
             ),
             Node(
                 package="smart_factory_mrs",
