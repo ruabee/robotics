@@ -88,17 +88,21 @@ class FactorySimulation:
         return lines
 
     def _robot_grid_position(self, robot: Robot) -> tuple[int, int]:
+        x, y = self.robot_xy(robot)
+        return round(x), round(y)
+
+    def robot_xy(self, robot: Robot) -> tuple[float, float]:
         if robot.current_task is None or robot.total_travel <= 0.0:
             location = FACTORY_MAP[robot.location]
-            return int(location.x), int(location.y)
+            return location.x, location.y
 
         task = robot.current_task
         start = FACTORY_MAP[robot.location]
         end = FACTORY_MAP[task.dropoff]
         progress = 1.0 - (robot.remaining_travel / robot.total_travel)
-        x = round(start.x + (end.x - start.x) * progress)
-        y = round(start.y + (end.y - start.y) * progress)
-        return max(0, min(8, x)), max(0, min(6, y))
+        x = start.x + (end.x - start.x) * progress
+        y = start.y + (end.y - start.y) * progress
+        return max(0.0, min(8.0, x)), max(0.0, min(6.0, y))
 
     def _route_text(self, robot: Robot) -> str:
         if robot.current_task is None:

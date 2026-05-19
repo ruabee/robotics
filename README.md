@@ -59,6 +59,49 @@ ros2 run smart_factory_mrs factory_sim
 ros2 launch smart_factory_mrs factory_sim.launch.py
 ```
 
+## Gazebo로 보기
+
+Gazebo 패키지가 없다면 Ubuntu에서 먼저 설치합니다.
+
+```bash
+sudo apt update
+sudo apt install ros-humble-gazebo-ros-pkgs
+```
+
+빌드 후 Gazebo 시뮬레이션을 실행합니다.
+
+```bash
+cd ~/robot_ws
+source /opt/ros/humble/setup.bash
+colcon build --packages-select smart_factory_mrs
+source install/setup.bash
+ros2 launch smart_factory_mrs gazebo_factory_sim.launch.py
+```
+
+Gazebo 화면에서는 다음처럼 보면 됩니다.
+
+- 파란 박스: 부품 창고 `W1`, `W2`
+- 초록 박스: 조립 스테이션 `S1`, `S2`, `S3`
+- 빨간 원통: 로봇 `R1`
+- 노란 원통: 로봇 `R2`
+
+이벤트는 다른 터미널에서 토픽으로 넣습니다.
+
+```bash
+source /opt/ros/humble/setup.bash
+source ~/robot_ws/install/setup.bash
+ros2 topic pub --once /factory_sim/event std_msgs/msg/String "{data: '1'}"
+```
+
+이벤트 번호는 텍스트 시뮬레이션과 같습니다.
+
+```text
+1: 생산 순서 변경
+2: V2 부품 지연
+3: 긴급 작업 삽입
+4: 재스케줄링
+```
+
 실행 중 터미널에 숫자를 입력하고 Enter를 누르면 이벤트가 발생합니다.
 
 ```text

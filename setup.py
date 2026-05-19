@@ -1,3 +1,5 @@
+from glob import glob
+
 from setuptools import find_packages, setup
 
 package_name = "smart_factory_mrs"
@@ -9,7 +11,8 @@ setup(
     data_files=[
         ("share/ament_index/resource_index/packages", ["resource/" + package_name]),
         ("share/" + package_name, ["package.xml"]),
-        ("share/" + package_name + "/launch", ["launch/factory_sim.launch.py"]),
+        ("share/" + package_name + "/launch", glob("launch/*.launch.py")),
+        ("share/" + package_name + "/worlds", glob("worlds/*.world")),
     ],
     install_requires=["setuptools"],
     zip_safe=True,
@@ -21,6 +24,7 @@ setup(
     entry_points={
         "console_scripts": [
             "factory_sim = smart_factory_mrs.factory_sim_node:main",
+            "gazebo_factory_sim = smart_factory_mrs.gazebo_factory_sim_node:main",
         ],
     },
 )
