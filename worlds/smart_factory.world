@@ -116,6 +116,20 @@
       </link>
     </model>
 
+    <model name="dynamic_obstacle">
+      <static>true</static>
+      <pose>-20 -20 0.45 0 0 0</pose>
+      <link name="link">
+        <visual name="body">
+          <geometry><box><size>1.0 1.0 0.9</size></box></geometry>
+          <material><ambient>0.85 0.05 0.05 1</ambient><diffuse>0.85 0.05 0.05 1</diffuse></material>
+        </visual>
+        <collision name="collision">
+          <geometry><box><size>1.0 1.0 0.9</size></box></geometry>
+        </collision>
+      </link>
+    </model>
+
     <model name="R1">
       <pose>0 0 0.0 0 0 0</pose>
       <static>false</static>

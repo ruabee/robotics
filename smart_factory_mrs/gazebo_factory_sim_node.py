@@ -56,6 +56,7 @@ class GazeboFactorySimNode(Node):
         while self.events:
             for line in self.simulation.apply_event(self.events.popleft()):
                 self.get_logger().info(line)
+            self.publish_obstacle_state()
             self._start_new_visual_segment()
 
         self.step_elapsed += TIMER_PERIOD
@@ -70,6 +71,12 @@ class GazeboFactorySimNode(Node):
 
         self.publish_robot_states()
 
+    def publish_obstacle_state(self) -> None:
+        if self.simulation.scheduler.obstacle_active:
+            self.set_entity_pose("dynamic_obstacle", 4.0, 3.0, 0.0, z=0.45)
+        else:
+            self.set_entity_pose("dynamic_obstacle", -20.0, -20.0, 0.0, z=0.45)
+
     def publish_robot_states(self) -> None:
         self.visual_positions = self._interpolated_positions()
         for robot_id, (x, y) in self.visual_positions.items():
@@ -80,12 +87,12 @@ class GazeboFactorySimNode(Node):
             self.publish_cmd_vel(robot_id)
             self.set_entity_pose(robot_id, x, y, yaw)
 
-    def set_entity_pose(self, entity_name: str, x: float, y: float, yaw: float) -> None:
+    def set_entity_pose(self, entity_name: str, x: float, y: float, yaw: float, z: float = 0.0) -> None:
         state = EntityState()
         state.name = entity_name
         state.pose.position.x = x
         state.pose.position.y = y
-        state.pose.position.z = 0.0
+        state.pose.position.z = z
         state.pose.orientation.z = sin(yaw / 2.0)
         state.pose.orientation.w = cos(yaw / 2.0)
         state.reference_frame = "world"

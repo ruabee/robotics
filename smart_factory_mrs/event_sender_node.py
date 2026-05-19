@@ -10,6 +10,8 @@ Factory event sender
   1 = change production sequence: V1 -> V3 -> V2
   2 = delay V2 part
   3 = insert urgent task X
+  o = activate central aisle obstacle
+  c = clear central aisle obstacle
   r = reschedule now
   q = quit
 """
@@ -36,8 +38,8 @@ def main(args=None):
             event_key = input("event> ").strip()
             if event_key == "q":
                 break
-            if event_key not in {"1", "2", "3", "4", "r", "R"}:
-                print("Use 1, 2, 3, r, or q.", file=sys.stderr)
+            if event_key not in {"1", "2", "3", "4", "r", "R", "o", "O", "c", "C"}:
+                print("Use 1, 2, 3, o, c, r, or q.", file=sys.stderr)
                 continue
             node.publish_event(event_key)
             rclpy.spin_once(node, timeout_sec=0.1)

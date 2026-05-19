@@ -13,6 +13,8 @@ Controls:
   1 = change sequence V1 -> V3 -> V2
   2 = delay V2 part
   3 = insert urgent task X
+  o = activate central aisle obstacle
+  c = clear central aisle obstacle
   r = reschedule now
   q = quit
 """

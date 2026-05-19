@@ -12,6 +12,7 @@
 - ROS2 노드가 Gazebo의 entity state를 갱신해서 로봇 위치를 시각화한다.
 - 강의자료의 mobile robot 예시처럼 바퀴, caster, laser frame 형태가 보이는 로봇 모델로 변경했다.
 - `/R1/cmd_vel`, `/R2/cmd_vel` 토픽을 발행해서 controller 계층의 명령을 확인할 수 있게 했다.
+- `o/c` 이벤트로 중앙 통로 장애물을 켜고 끄며, Gazebo world와 스케줄러 비용 계산에 동시에 반영한다.
 
 ### ROS_02_Robot_Description
 

@@ -7,6 +7,11 @@ class Scheduler:
         self.robots = robots
         self.tasks = tasks
         self.last_reason = "initial assignment"
+        self.obstacle_active = False
+
+    def set_obstacle_active(self, active: bool) -> None:
+        self.obstacle_active = active
+        self.last_reason = "central aisle obstacle activated" if active else "central aisle obstacle cleared"
 
     def reorder_sequence_for_v3_before_v2(self) -> None:
         sequence = {"V1": 0, "V3": 1, "V2": 2, "X": -1}
@@ -72,7 +77,7 @@ class Scheduler:
         return (-task.priority, task.sequence_index, task.due_time, -lateness)
 
     def _assignment_cost(self, robot: Robot, task: Task, current_time: int) -> float:
-        distance = travel_distance(robot.location, task.pickup, task.dropoff)
+        distance = travel_distance(robot.location, task.pickup, task.dropoff, self.obstacle_active)
         finish_time = current_time + distance
         due_penalty = max(0.0, finish_time - task.due_time) * 3.0
         sequence_penalty = task.sequence_index * 2.0
@@ -83,7 +88,7 @@ class Scheduler:
         task.status = TaskStatus.IN_PROGRESS
         task.assigned_robot = robot.robot_id
         robot.current_task = task
-        robot.remaining_travel = travel_distance(robot.location, task.pickup, task.dropoff)
+        robot.remaining_travel = travel_distance(robot.location, task.pickup, task.dropoff, self.obstacle_active)
         robot.total_travel = robot.remaining_travel
 
     def _preempt_for_urgent_task(self, current_time: int) -> list[str]:

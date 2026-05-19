@@ -50,12 +50,17 @@ class FactorySimulation:
             self.scheduler.insert_urgent_task(create_urgent_task(self.time))
         elif event_key in {"4", "r", "R"}:
             self.scheduler.last_reason = "manual reschedule"
+        elif event_key in {"o", "O"}:
+            self.scheduler.set_obstacle_active(True)
+        elif event_key in {"c", "C"}:
+            self.scheduler.set_obstacle_active(False)
         else:
             return [f"Unknown event: {event_key}"]
         return self.scheduler.reschedule(self.time)
 
     def status_lines(self) -> list[str]:
         lines = ["[Status] Robots"]
+        lines.append(f"  obstacle_active={self.scheduler.obstacle_active}")
         for robot in self.robots:
             task_id = robot.current_task.task_id if robot.current_task else "-"
             route = self._route_text(robot)
