@@ -1,6 +1,7 @@
 from collections import deque
 from math import atan2, cos, sin
 
+from geometry_msgs.msg import Twist
 import rclpy
 from gazebo_msgs.msg import EntityState
 from gazebo_msgs.srv import SetEntityState
@@ -24,6 +25,10 @@ class GazeboFactorySimNode(Node):
         self.motion_start_positions = dict(self.visual_positions)
         self.motion_target_positions = dict(self.visual_positions)
         self.status_pub = self.create_publisher(String, "factory_sim/status", 10)
+        self.cmd_vel_publishers = {
+            "R1": self.create_publisher(Twist, "R1/cmd_vel", 10),
+            "R2": self.create_publisher(Twist, "R2/cmd_vel", 10),
+        }
         self.event_sub = self.create_subscription(String, "factory_sim/event", self.on_event, 10)
         self.set_state_client = self.create_client(SetEntityState, "/set_entity_state")
         self.timer = self.create_timer(TIMER_PERIOD, self.on_timer)
@@ -72,6 +77,7 @@ class GazeboFactorySimNode(Node):
             yaw = self._robot_yaw(robot_id)
             if robot.current_task is None:
                 yaw = 0.0
+            self.publish_cmd_vel(robot_id)
             self.set_entity_pose(robot_id, x, y, yaw)
 
     def set_entity_pose(self, entity_name: str, x: float, y: float, yaw: float) -> None:
@@ -126,6 +132,14 @@ class GazeboFactorySimNode(Node):
         if abs(dx) < 0.001 and abs(dy) < 0.001:
             return 0.0
         return atan2(dy, dx)
+
+    def publish_cmd_vel(self, robot_id: str) -> None:
+        start = self.motion_start_positions[robot_id]
+        target = self.motion_target_positions[robot_id]
+        msg = Twist()
+        msg.linear.x = (target[0] - start[0]) / SIMULATION_STEP_INTERVAL
+        msg.linear.y = (target[1] - start[1]) / SIMULATION_STEP_INTERVAL
+        self.cmd_vel_publishers[robot_id].publish(msg)
 
 
 def main(args=None):

@@ -10,6 +10,13 @@
 - `W1`, `W2`는 창고, `S1`, `S2`, `S3`는 조립 스테이션으로 모델링했다.
 - 로봇 `R1`, `R2`를 Gazebo 모델로 배치했다.
 - ROS2 노드가 Gazebo의 entity state를 갱신해서 로봇 위치를 시각화한다.
+- 강의자료의 mobile robot 예시처럼 바퀴, caster, laser frame 형태가 보이는 로봇 모델로 변경했다.
+- `/R1/cmd_vel`, `/R2/cmd_vel` 토픽을 발행해서 controller 계층의 명령을 확인할 수 있게 했다.
+
+### ROS_02_Robot_Description
+
+- `base_link`, wheel, caster, laser frame에 해당하는 시각 요소를 Gazebo 모델에 반영했다.
+- 최종 Nav2 확장을 위해 `base_link -> laser_frame` 구조가 필요하다는 점을 설계 기준으로 둔다.
 
 ### ROS_08_Extra
 
