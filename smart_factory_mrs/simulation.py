@@ -1,5 +1,6 @@
 from math import ceil
 
+from smart_factory_mrs.factory_map import FACTORY_MAP
 from smart_factory_mrs.models import Robot, TaskStatus
 from smart_factory_mrs.scheduler import Scheduler
 from smart_factory_mrs.tasks import create_initial_tasks, create_urgent_task
@@ -31,8 +32,10 @@ class FactorySimulation:
                 robot.completed_tasks.append(task.task_id)
                 logs.append(f"{robot.robot_id}: completed {task.task_id} at {task.dropoff}")
                 robot.current_task = None
+                robot.total_travel = 0.0
 
         logs.extend(self.scheduler.reschedule(self.time))
+        logs.extend(self.map_lines())
         logs.extend(self.status_lines())
         return logs
 
@@ -53,9 +56,11 @@ class FactorySimulation:
         lines = ["[Status] Robots"]
         for robot in self.robots:
             task_id = robot.current_task.task_id if robot.current_task else "-"
+            route = self._route_text(robot)
+            progress = self._progress_bar(robot)
             lines.append(
                 f"  {robot.robot_id}: loc={robot.location}, task={task_id}, "
-                f"done={robot.completed_tasks}"
+                f"{route}, {progress}, done={robot.completed_tasks}"
             )
 
         lines.append("[Status] Tasks")
@@ -65,3 +70,45 @@ class FactorySimulation:
                 f"ready={task.ready_time}, due={task.due_time}, robot={task.assigned_robot}"
             )
         return lines
+
+    def map_lines(self) -> list[str]:
+        grid = [["." for _ in range(9)] for _ in range(7)]
+        for name, location in FACTORY_MAP.items():
+            grid[int(location.y)][int(location.x)] = name
+
+        for robot in self.robots:
+            x, y = self._robot_grid_position(robot)
+            current = grid[y][x]
+            grid[y][x] = robot.robot_id if current == "." else f"{current}/{robot.robot_id}"
+
+        lines = ["[Factory Map]"]
+        for y in range(6, -1, -1):
+            cells = [f"{grid[y][x]:^7}" for x in range(9)]
+            lines.append("".join(cells))
+        return lines
+
+    def _robot_grid_position(self, robot: Robot) -> tuple[int, int]:
+        if robot.current_task is None or robot.total_travel <= 0.0:
+            location = FACTORY_MAP[robot.location]
+            return int(location.x), int(location.y)
+
+        task = robot.current_task
+        start = FACTORY_MAP[robot.location]
+        end = FACTORY_MAP[task.dropoff]
+        progress = 1.0 - (robot.remaining_travel / robot.total_travel)
+        x = round(start.x + (end.x - start.x) * progress)
+        y = round(start.y + (end.y - start.y) * progress)
+        return max(0, min(8, x)), max(0, min(6, y))
+
+    def _route_text(self, robot: Robot) -> str:
+        if robot.current_task is None:
+            return "route=-"
+        task = robot.current_task
+        return f"route={robot.location}->{task.pickup}->{task.dropoff}"
+
+    def _progress_bar(self, robot: Robot) -> str:
+        if robot.current_task is None or robot.total_travel <= 0.0:
+            return "progress=[----------] 0%"
+        progress = 1.0 - (robot.remaining_travel / robot.total_travel)
+        filled = max(0, min(10, round(progress * 10)))
+        return f"progress=[{'#' * filled}{'-' * (10 - filled)}] {round(progress * 100)}%"

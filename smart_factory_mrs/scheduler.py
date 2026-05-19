@@ -84,6 +84,7 @@ class Scheduler:
         task.assigned_robot = robot.robot_id
         robot.current_task = task
         robot.remaining_travel = travel_distance(robot.location, task.pickup, task.dropoff)
+        robot.total_travel = robot.remaining_travel
 
     def _preempt_for_urgent_task(self, current_time: int) -> list[str]:
         urgent_waiting = [
@@ -108,6 +109,7 @@ class Scheduler:
         interrupted_task.assigned_robot = None
         robot.current_task = None
         robot.remaining_travel = 0.0
+        robot.total_travel = 0.0
         return [
             f"[Scheduler] {robot.robot_id} interrupted {interrupted_task.task_id} "
             "to handle an urgent task."

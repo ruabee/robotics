@@ -46,6 +46,7 @@ class Robot:
     location: str
     current_task: Task | None = None
     remaining_travel: float = 0.0
+    total_travel: float = 0.0
     completed_tasks: list[str] = field(default_factory=list)
 
     def is_idle(self) -> bool:
