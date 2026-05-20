@@ -1,6 +1,6 @@
 from math import ceil
 
-from smart_factory_mrs.factory_map import FACTORY_MAP
+from smart_factory_mrs.factory_map import FACTORY_MAP, route_points
 from smart_factory_mrs.models import Robot, TaskStatus
 from smart_factory_mrs.scheduler import Scheduler
 from smart_factory_mrs.tasks import create_initial_tasks, create_production_batch, create_urgent_task
@@ -124,12 +124,31 @@ class FactorySimulation:
             return location.x, location.y
 
         task = robot.current_task
-        start = FACTORY_MAP[robot.location]
-        end = FACTORY_MAP[task.dropoff]
+        points = route_points(robot.location, task.pickup, task.dropoff, self.scheduler.obstacle_active)
         progress = 1.0 - (robot.remaining_travel / robot.total_travel)
-        x = start.x + (end.x - start.x) * progress
-        y = start.y + (end.y - start.y) * progress
-        return max(0.0, min(8.0, x)), max(0.0, min(6.0, y))
+        return self._point_on_path(points, progress)
+
+    def _point_on_path(self, points, progress: float) -> tuple[float, float]:
+        if len(points) == 1:
+            return points[0].x, points[0].y
+        segment_lengths = [
+            start.distance_to(end)
+            for start, end in zip(points, points[1:])
+        ]
+        total = sum(segment_lengths)
+        if total <= 0.0:
+            return points[-1].x, points[-1].y
+
+        target_distance = max(0.0, min(total, total * progress))
+        traveled = 0.0
+        for start, end, length in zip(points, points[1:], segment_lengths):
+            if traveled + length >= target_distance:
+                segment_progress = 0.0 if length <= 0.0 else (target_distance - traveled) / length
+                x = start.x + (end.x - start.x) * segment_progress
+                y = start.y + (end.y - start.y) * segment_progress
+                return max(0.0, min(8.0, x)), max(0.0, min(6.0, y))
+            traveled += length
+        return points[-1].x, points[-1].y
 
     def _route_text(self, robot: Robot) -> str:
         if robot.current_task is None:

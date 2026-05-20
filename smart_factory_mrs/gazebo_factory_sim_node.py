@@ -76,6 +76,7 @@ class GazeboFactorySimNode(Node):
 
         self.step_elapsed += TIMER_PERIOD
         self.motion_elapsed += TIMER_PERIOD
+        self.publish_obstacle_state()
         if self.step_elapsed >= SIMULATION_STEP_INTERVAL:
             self.step_elapsed = 0.0
             lines = self.simulation.step()

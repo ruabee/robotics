@@ -4,6 +4,8 @@ OBSTACLE_PENALTY = 10.0
 OBSTACLE_X = 4.0
 OBSTACLE_Y_MIN = 1.0
 OBSTACLE_Y_MAX = 5.0
+LOWER_DETOUR_Y = 0.0
+UPPER_DETOUR_Y = 6.0
 
 
 FACTORY_MAP = {
@@ -16,19 +18,49 @@ FACTORY_MAP = {
 
 
 def travel_distance(start: str, pickup: str, dropoff: str, obstacle_active: bool = False) -> float:
-    start_loc = FACTORY_MAP[start]
-    pickup_loc = FACTORY_MAP[pickup]
-    dropoff_loc = FACTORY_MAP[dropoff]
-    base_distance = start_loc.distance_to(pickup_loc) + pickup_loc.distance_to(dropoff_loc)
-    if not obstacle_active:
-        return base_distance
-    return base_distance + obstacle_penalty(start_loc, pickup_loc) + obstacle_penalty(pickup_loc, dropoff_loc)
+    points = route_points(start, pickup, dropoff, obstacle_active)
+    return path_distance(points)
+
+
+def route_points(start: str, pickup: str, dropoff: str, obstacle_active: bool = False) -> list[Location]:
+    points = [FACTORY_MAP[start]]
+    points.extend(_segment_points(FACTORY_MAP[start], FACTORY_MAP[pickup], obstacle_active)[1:])
+    points.extend(_segment_points(points[-1], FACTORY_MAP[dropoff], obstacle_active)[1:])
+    return _deduplicate_points(points)
+
+
+def path_distance(points: list[Location]) -> float:
+    return sum(start.distance_to(end) for start, end in zip(points, points[1:]))
 
 
 def obstacle_penalty(start: Location, end: Location) -> float:
     if not _segment_crosses_obstacle_zone(start, end):
         return 0.0
     return OBSTACLE_PENALTY
+
+
+def _segment_points(start: Location, end: Location, obstacle_active: bool) -> list[Location]:
+    if not obstacle_active or not _segment_crosses_obstacle_zone(start, end):
+        return [start, end]
+
+    detour_y = LOWER_DETOUR_Y if (start.y + end.y) / 2.0 <= 3.0 else UPPER_DETOUR_Y
+    return [
+        start,
+        Location("detour_a", start.x, detour_y),
+        Location("detour_b", OBSTACLE_X - 0.8, detour_y),
+        Location("detour_c", OBSTACLE_X + 0.8, detour_y),
+        Location("detour_d", end.x, detour_y),
+        end,
+    ]
+
+
+def _deduplicate_points(points: list[Location]) -> list[Location]:
+    result = []
+    for point in points:
+        if result and abs(result[-1].x - point.x) < 0.001 and abs(result[-1].y - point.y) < 0.001:
+            continue
+        result.append(point)
+    return result
 
 
 def _segment_crosses_obstacle_zone(start: Location, end: Location) -> bool:
