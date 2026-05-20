@@ -6,6 +6,9 @@ OBSTACLE_Y_MIN = 1.0
 OBSTACLE_Y_MAX = 5.0
 LOWER_DETOUR_Y = 0.0
 UPPER_DETOUR_Y = 6.0
+MAIN_AISLE_X_LEFT = 2.4
+MAIN_AISLE_X_RIGHT = 5.6
+AISLE_LEVELS = [0.0, 3.0, 6.0]
 
 
 FACTORY_MAP = {
@@ -40,18 +43,42 @@ def obstacle_penalty(start: Location, end: Location) -> float:
 
 
 def _segment_points(start: Location, end: Location, obstacle_active: bool) -> list[Location]:
-    if not obstacle_active or not _segment_crosses_obstacle_zone(start, end):
+    if not obstacle_active:
+        return _aisle_route(start, end)
+
+    points = _aisle_route(start, end)
+    if any(_segment_crosses_obstacle_zone(a, b) for a, b in zip(points, points[1:])):
+        detour_y = LOWER_DETOUR_Y if (start.y + end.y) / 2.0 <= 3.0 else UPPER_DETOUR_Y
+        points = [
+            start,
+            Location("detour_start", start.x, detour_y),
+            Location("detour_left", MAIN_AISLE_X_LEFT, detour_y),
+            Location("detour_right", MAIN_AISLE_X_RIGHT, detour_y),
+            Location("detour_end", end.x, detour_y),
+            end,
+        ]
+    return _deduplicate_points(points)
+
+
+def _aisle_route(start: Location, end: Location) -> list[Location]:
+    if abs(start.x - end.x) < 0.001 or abs(start.y - end.y) < 0.001:
         return [start, end]
 
-    detour_y = LOWER_DETOUR_Y if (start.y + end.y) / 2.0 <= 3.0 else UPPER_DETOUR_Y
+    aisle_y = _nearest_aisle_y((start.y + end.y) / 2.0)
+    left_x = MAIN_AISLE_X_LEFT if start.x <= end.x else MAIN_AISLE_X_RIGHT
+    right_x = MAIN_AISLE_X_RIGHT if start.x <= end.x else MAIN_AISLE_X_LEFT
     return [
         start,
-        Location("detour_a", start.x, detour_y),
-        Location("detour_b", OBSTACLE_X - 0.8, detour_y),
-        Location("detour_c", OBSTACLE_X + 0.8, detour_y),
-        Location("detour_d", end.x, detour_y),
+        Location("aisle_start_y", start.x, aisle_y),
+        Location("aisle_left", left_x, aisle_y),
+        Location("aisle_right", right_x, aisle_y),
+        Location("aisle_end_y", end.x, aisle_y),
         end,
     ]
+
+
+def _nearest_aisle_y(value: float) -> float:
+    return min(AISLE_LEVELS, key=lambda aisle_y: abs(aisle_y - value))
 
 
 def _deduplicate_points(points: list[Location]) -> list[Location]:

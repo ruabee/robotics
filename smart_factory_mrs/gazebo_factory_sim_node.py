@@ -89,9 +89,9 @@ class GazeboFactorySimNode(Node):
 
     def publish_obstacle_state(self) -> None:
         if self.simulation.scheduler.obstacle_active:
-            self.set_entity_pose("dynamic_obstacle", 4.0, 3.0, 0.0, z=0.45)
+            self.set_entity_pose("dynamic_obstacle", 4.0, 3.0, 0.0, z=0.0)
         else:
-            self.set_entity_pose("dynamic_obstacle", -20.0, -20.0, 0.0, z=0.45)
+            self.set_entity_pose("dynamic_obstacle", -20.0, -20.0, 0.0, z=0.0)
 
     def publish_robot_states(self) -> None:
         self.visual_positions = self._interpolated_positions()

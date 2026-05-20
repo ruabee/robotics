@@ -60,7 +60,9 @@ class Scheduler:
         for robot in idle_robots:
             if not candidates:
                 break
-            best_task = min(candidates, key=lambda task: self._assignment_cost(robot, task, current_time))
+            urgent_candidates = [task for task in candidates if task.urgent]
+            pool = urgent_candidates if urgent_candidates else candidates
+            best_task = min(pool, key=lambda task: self._assignment_cost(robot, task, current_time))
             self._assign(robot, best_task, current_time)
             candidates.remove(best_task)
             logs.append(
